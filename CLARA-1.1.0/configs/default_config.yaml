@@ -1,0 +1,89 @@
+"""
+Default CLARA Configuration for MVSA-Single Dataset
+
+This configuration achieves 83.16% accuracy on MVSA-Single test set.
+"""
+
+# Model Architecture
+model:
+  vision_encoder: "openai/clip-vit-base-patch16"
+  text_encoder: "microsoft/deberta-v3-base"
+  hidden_dim: 512
+  num_classes: 3  # Positive, Neutral, Negative
+  
+  # LoRA Configuration
+  lora_rank: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  freeze_encoders: true
+  
+  # Co-Attention Configuration
+  num_attention_heads: 8
+  num_attention_layers: 2
+  attention_dropout: 0.1
+  
+  # Classification
+  dropout: 0.1
+
+# Training Configuration
+training:
+  # Optimizer
+  optimizer: "adamw"
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  
+  # Scheduler
+  scheduler: "cosine"
+  warmup_ratio: 0.1
+  
+  # Training Parameters
+  batch_size: 32
+  num_epochs: 50
+  early_stopping_patience: 10
+  
+  # Loss
+  label_smoothing: 0.1
+  
+  # Reproducibility
+  seed: 42
+  deterministic: true
+
+# Data Configuration
+data:
+  data_dir: "data/MVSA-Single"
+  max_text_length: 77
+  image_size: 224
+  num_workers: 4
+  pin_memory: true
+  
+  # Augmentation (optional)
+  use_augmentation: false
+
+# Output Configuration
+output:
+  output_dir: "outputs/mvsa_single"
+  save_best_only: true
+  save_frequency: 1  # Save every N epochs
+  log_frequency: 10  # Log every N batches
+
+# Evaluation Configuration
+evaluation:
+  metrics:
+    - "accuracy"
+    - "f1_weighted"
+    - "f1_macro"
+    - "precision"
+    - "recall"
+  
+  # Per-class metrics
+  class_names:
+    - "Positive"
+    - "Neutral"
+    - "Negative"
+
+# Hardware Configuration
+hardware:
+  device: "cuda"  # "cuda" or "cpu"
+  mixed_precision: true
+  gradient_accumulation_steps: 1

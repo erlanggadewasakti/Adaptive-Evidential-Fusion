@@ -1,0 +1,105 @@
+"""
+CLARA Configuration for HFM (Hateful Memes) Dataset
+
+Binary classification for hate speech detection in memes.
+Achieves 88.13% accuracy on HFM test set.
+"""
+
+# Model Architecture
+model:
+  vision_encoder: "openai/clip-vit-base-patch16"
+  text_encoder: "microsoft/deberta-v3-base"
+  hidden_dim: 512
+  num_classes: 2  # Non-hateful, Hateful
+  
+  # LoRA Configuration
+  lora_rank: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  freeze_encoders: true
+  
+  # Co-Attention Configuration
+  num_attention_heads: 8
+  num_attention_layers: 2
+  attention_dropout: 0.1
+  
+  # Classification
+  dropout: 0.1
+
+# Training Configuration
+training:
+  # Optimizer
+  optimizer: "adamw"
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  
+  # Scheduler
+  scheduler: "cosine"
+  warmup_ratio: 0.1
+  
+  # Training Parameters
+  batch_size: 32
+  num_epochs: 50
+  early_stopping_patience: 10
+  
+  # Loss
+  label_smoothing: 0.1
+  use_class_weights: false  # Balanced dataset
+  
+  # Reproducibility
+  seed: 42
+  deterministic: true
+
+# Data Configuration
+data:
+  data_dir: "data/HFM"
+  max_text_length: 77
+  image_size: 224
+  num_workers: 4
+  pin_memory: true
+  
+  # Class distribution (well-balanced)
+  # Non-hateful: 12,435 (50.5%)
+  # Hateful: 12,200 (49.5%)
+  
+  # Data augmentation for robustness
+  use_augmentation: true
+  augmentation:
+    # Text augmentation
+    text_augmentation: false  # Keep original text
+    
+    # Image augmentation (light)
+    random_horizontal_flip: 0.5
+    color_jitter: 0.1
+
+# Output Configuration
+output:
+  output_dir: "outputs/hfm"
+  save_best_only: true
+  save_frequency: 1
+  log_frequency: 10
+
+# Evaluation Configuration
+evaluation:
+  metrics:
+    - "accuracy"
+    - "f1_weighted"
+    - "f1_macro"
+    - "precision"
+    - "recall"
+    - "roc_auc"  # Important for binary classification
+  
+  # Per-class metrics
+  class_names:
+    - "Non-hateful"
+    - "Hateful"
+  
+  # Monitor metric
+  monitor_metric: "f1_macro"
+
+# Hardware Configuration
+hardware:
+  device: "cuda"
+  mixed_precision: true
+  gradient_accumulation_steps: 1
